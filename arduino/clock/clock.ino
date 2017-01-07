@@ -13,7 +13,7 @@
 #define TIME_HEADER  'T'   // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message
 
-uint8_t main_color[3] = {22, 0, 0}; // muted red
+uint8_t main_color[3] = {4, 0, 0}; // muted red
 static const uint8_t color_black[3] = {0, 0, 0}; // black/off
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(30, DISPLAY_PIN, NEO_GRB + NEO_KHZ800);
@@ -33,11 +33,9 @@ void loop(){
   if(timeStatus() == timeNotSet) {
     breathe(main_color);
     // Serial.println("waiting for sync message");
-    delay(1);
   }
   else {
     displayClock(now(), main_color);
-    delay(10);
   }
 }
 
@@ -72,11 +70,9 @@ void blink(uint8_t color[]) {
 }
 
 void breathe(uint8_t color[]) {
-  int ms = millis();
-
   // formula from http://sean.voisen.org/blog/2011/10/breathing-led-with-arduino/
   // adapted to output 0-1 values for muting a color
-  float val = (exp(sin(ms/2000.0*PI)) - 0.36787944)*108.0/255;
+  float val = (exp(sin(millis()/2000.0*PI)) - 0.36787944)*108.0/255;
 
   // mute color
   uint8_t clr[] = {(int) (color[0]*val), (int) (color[1]*val), (int) (color[2]*val)};
@@ -89,7 +85,6 @@ void breathe(uint8_t color[]) {
   setDots(clr);
   strip.show();
 }
-
 
 // display functions
 
