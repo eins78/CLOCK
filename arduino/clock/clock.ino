@@ -22,6 +22,7 @@ void setup()  {
   Serial.begin(9600);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
+  startupShow(main_color);
 }
 
 void loop(){
@@ -146,6 +147,39 @@ void setDots(uint8_t clr[]) {
   strip.setPixelColor(28, clr[0], clr[1], clr[2]);
   strip.setPixelColor(29, clr[0], clr[1], clr[2]);
 }
+
+void displayColorWipe(uint8_t clr[]) {
+  int wait = 50;
+  wipeChar(1, clr, wait);
+  wipeChar(2, clr, wait);
+  strip.setPixelColor(28, clr[0], clr[1], clr[2]);
+  strip.setPixelColor(29, clr[0], clr[1], clr[2]);
+  wipeChar(3, clr, wait);
+  delay(wait);
+  wipeChar(4, clr, wait);
+  delay(wait);
+}
+
+void startupShow(uint8_t clr[]) {
+  uint8_t c[] = {255,0,0};
+  displayColorWipe(c);
+  c[0] =   0; c[1] = 255, c[2] =   0; displayColorWipe(c);
+  c[0] =   0; c[1] =   0, c[2] = 255; displayColorWipe(c);
+  c[0] = 255; c[1] = 255, c[2] = 255; displayColorWipe(c);
+  c[0] =   0; c[1] =   0, c[2] =   0; displayColorWipe(c);
+  displayColorWipe(clr);
+  delay(1000);
+}
+
+void wipeChar(int pos, uint8_t clr[], int wait) {
+  for(int i=0; i<7; i++) {
+    int pixel_pos = (display_map[pos - 1][i]) + display_start;
+    strip.setPixelColor(pixel_pos, clr[0], clr[1], clr[2]);
+    strip.show();
+    delay(wait);
+  }
+}
+
 
 // serial clock sync
 
