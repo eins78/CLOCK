@@ -1,24 +1,25 @@
-
+// arduino digital clock with 4 7-segment characters and 2 dots using neopixels
+//
 // based on/inspired by:
 // - <http://playground.arduino.cc/Code/Time>
+// - <https://github.com/vemeT5ak/7-segment-neopixel-clock/blob/4b1a8b56e2d49cf40c456f9cd0535f94f130c49a/_7SEG_COLOUR_CLOCK/supportFunctions.ino#L273-L296>
 
 #include <Time.h>
 #include <TimeLib.h>
 #include <Adafruit_NeoPixel.h>
 
-// display config
 #define DISPLAY_PIN 2
-// time config (serial console sync)
 #define TIME_MSG_LEN  11   // time sync to PC is HEADER followed by Unix time_t as ten ASCII digits
 #define TIME_HEADER  'T'   // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message
 
-uint32_t color = strip.Color(2, 0, 0);  // red
-// int color[3] = {2, 0, 0}
+uint8_t main_color[3] = {22, 0, 0}; // muted red
+static const uint8_t color_black[3] = {0, 0, 0}; // black/off
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(30, DISPLAY_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup()  {
   Serial.begin(9600);
-  pinMode(LED_BUILTIN, OUTPUT);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 }
@@ -30,22 +31,21 @@ void loop(){
   }
 
   if(timeStatus() == timeNotSet) {
-    blink(color);
-//    Serial.println("waiting for sync message");
-// // fake clock
-//  setTime(fake_time);
+    blink(main_color);
+    // Serial.println("waiting for sync message");
   }
   else {
-    displayClock(now(), color);
+    displayClock(now(), main_color);
   }
   delay(10);
 }
+
+// display helpers
 
 void displayClock(time_t ts, uint32_t clr) {
   int num1 = (int) (hour(ts) + 24) % 24;
   int num2 = (int) minute(ts);
 
-  digitalWrite(LED_BUILTIN, LOW);
   setChar(1, (num1 / 10), clr);
   setChar(2, (num1 % 10), clr);
   setChar(3, (num2 / 10), clr);
@@ -54,15 +54,12 @@ void displayClock(time_t ts, uint32_t clr) {
   strip.show();
 }
 
-void blink(uint32_t color) {
+void blink(uint8_t color[]) {
   int ms = millis();
   int blinking = abs((ms/1000) % 2);
-  uint32_t clr = strip.Color(0, 0, 0);
+  uint32_t clr = color_black;
   if (blinking) {
     clr = color;
-    digitalWrite(LED_BUILTIN, HIGH);
-  } else {
-    digitalWrite(LED_BUILTIN, LOW);
   }
 
   setChar(1, 0, clr);
@@ -73,27 +70,8 @@ void blink(uint32_t color) {
   strip.show();
 }
 
-void processSyncMessage() {
-  // if time sync available from serial port, update time and return true
-  while(Serial.available() >=  TIME_MSG_LEN ){  // time message consists of header & 10 ASCII digits
-    char c = Serial.read() ;
-    Serial.print(c);
-    if( c == TIME_HEADER ) {
-      time_t pctime = 0;
-      for(int i=0; i < TIME_MSG_LEN -1; i++){
-        c = Serial.read();
-        if( c >= '0' && c <= '9'){
-          pctime = (10 * pctime) + (c - '0') ; // convert digits to a number
-        }
-      }
-      if (pctime) setTime(pctime);   // Sync Arduino clock to the time received on the serial port
-    }
-  }
-}
 
-
-
-// from <https://github.com/vemeT5ak/7-segment-neopixel-clock/blob/4b1a8b56e2d49cf40c456f9cd0535f94f130c49a/_7SEG_COLOUR_CLOCK/supportFunctions.ino#L273-L296>
+// display functions
 
 /*
  __3__
@@ -130,7 +108,7 @@ static const int display_map[4][7] = {
   {  6, 18, 25, 13,  1,  5, 17 }, // 4.
 };
 
-void setChar(int8_t pos, int8_t charcode, uint32_t clr)
+void setChar(int8_t pos, int8_t charcode, uint8_t clr[])
 {
   //  get line from font
   uint8_t line = font[charcode];
@@ -141,15 +119,35 @@ void setChar(int8_t pos, int8_t charcode, uint32_t clr)
     int pixel_pos = (display_map[pos - 1][i]) + display_start;
 
     if (line & 0b1) {
-      strip.setPixelColor(pixel_pos, clr);
+      strip.setPixelColor(pixel_pos, clr[0], clr[1], clr[2]);
     } else {
-     strip.setPixelColor(pixel_pos, strip.Color(0, 0, 0)); // black
+     strip.setPixelColor(pixel_pos, color_black[0], color_black[1], color_black[2]);
     }
     line >>= 1;
   }
 }
 
-void setDots(uint32_t clr) {
-  strip.setPixelColor(28, clr);
-  strip.setPixelColor(29, clr);
+void setDots(uint8_t clr[]) {
+  strip.setPixelColor(28, clr[0], clr[1], clr[2]);
+  strip.setPixelColor(29, clr[0], clr[1], clr[2]);
+}
+
+// serial clock sync
+
+void processSyncMessage() {
+  // if time sync available from serial port, update time and return true
+  while(Serial.available() >=  TIME_MSG_LEN ){  // time message consists of header & 10 ASCII digits
+    char c = Serial.read() ;
+    Serial.print(c);
+    if( c == TIME_HEADER ) {
+      time_t pctime = 0;
+      for(int i=0; i < TIME_MSG_LEN -1; i++){
+        c = Serial.read();
+        if( c >= '0' && c <= '9'){
+          pctime = (10 * pctime) + (c - '0') ; // convert digits to a number
+        }
+      }
+      if (pctime) setTime(pctime);   // Sync Arduino clock to the time received on the serial port
+    }
+  }
 }
