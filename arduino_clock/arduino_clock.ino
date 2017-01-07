@@ -31,13 +31,14 @@ void loop(){
   }
 
   if(timeStatus() == timeNotSet) {
-    blink(main_color);
+    breathe(main_color);
     // Serial.println("waiting for sync message");
+    delay(1);
   }
   else {
     displayClock(now(), main_color);
+    delay(10);
   }
-  delay(10);
 }
 
 // display helpers
@@ -62,6 +63,25 @@ void blink(uint8_t color[]) {
     clr = color;
   }
 
+  setChar(1, 0, clr);
+  setChar(2, 0, clr);
+  setChar(3, 0, clr);
+  setChar(4, 0, clr);
+  setDots(clr);
+  strip.show();
+}
+
+void breathe(uint8_t color[]) {
+  int ms = millis();
+
+  // formula from http://sean.voisen.org/blog/2011/10/breathing-led-with-arduino/
+  // adapted to output 0-1 values for muting a color
+  float val = (exp(sin(ms/2000.0*PI)) - 0.36787944)*108.0/255;
+
+  // mute color
+  uint8_t clr[] = {(int) (color[0]*val), (int) (color[1]*val), (int) (color[2]*val)};
+
+  // set digits and dots to 00:00 in muted color
   setChar(1, 0, clr);
   setChar(2, 0, clr);
   setChar(3, 0, clr);
