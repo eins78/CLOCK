@@ -1,0 +1,16 @@
+#!/bin/ash
+
+# creates a local socket that proxies to the arduino serial console.
+# scripts can just talk to the arduino like any unix socket,
+# without dealing with strange connection settings
+
+# TODO: device from config file (first arg)
+SERIAL_DEV=/dev/ttyUSB0
+LOCAL_SOCKET=/dev/arduino
+
+# serial device vodoo
+stty -F $SERIAL_DEV cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
+
+socat \
+  PTY,link=$LOCAL_SOCKET,raw,echo=0,crnl,shut-none \
+  file:$SERIAL_DEV,nonblock,raw,echo=0,waitlock=/var/run/tty,b9600

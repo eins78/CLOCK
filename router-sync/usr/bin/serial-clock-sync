@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# sync arduino clock over serial ala <http://playground.arduino.cc/Code/Time>
+TZ_adjust=1 # CET
+
+while true; do
+  d=$(date +%s)
+  t=$(echo "60*60*$TZ_adjust/1" | bc)
+  echo "T$(echo $d+$t | bc )" > /dev/arduino
+  sleep 0.1
+done
