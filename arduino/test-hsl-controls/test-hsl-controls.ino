@@ -1,11 +1,10 @@
-#include <Adafruit_NeoPixel.h>
 #define BUTTON_PIN 2
 #define DISPLAY_PIN 6
+#include <Adafruit_NeoPixel.h>
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, DISPLAY_PIN, NEO_GRB + NEO_KHZ800);
 
-int control_mode = 0;
-
 // analog controls
+int control_mode = 0;
 // button
 int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;   // the previous reading from the input pin
@@ -41,22 +40,24 @@ void setup() {
 }
 
 void loop()  {
-  if (buttonPressed(BUTTON_PIN)) {
-    control_mode++;
-    if (control_mode > 3) control_mode = 0;
-    Serial.print("control mode: ");
-    Serial.println(control_mode);
-    if (control_mode == 1) {
-      saturation = 255;
-      brightness = 128;
-    };
+  setControlMode(BUTTON_PIN);
+
+  if (control_mode > 0) {
+    colorMenu();
+    for(uint16_t i=0; i<strip.numPixels(); i++) {
+      strip.setPixelColor(i, rgb_colors[0], rgb_colors[1], rgb_colors[2]);
+    }
+    strip.show();
+
   }
+  delay(1);
+}
+
+void colorMenu() {
   sensorVal = getAnalogInput(inputPin);
 
   // set HSB values
   switch (control_mode) {
-    case 0:
-      break;
     case 1:
       hue = map(sensorVal,4, 1019,0, 359); // hue is a number between 0 and 360
       getRGB(hue,saturation,brightness,rgb_colors);   // converts HSB to RGB
@@ -68,15 +69,18 @@ void loop()  {
       brightness = map(sensorVal,4, 1019,0, 255); // value is a number between 0 - 255
       break;
   }
-
   getRGB(hue,saturation,brightness,rgb_colors);   // converts HSB to RGB
+}
 
-  for(uint16_t i=0; i<strip.numPixels(); i++) {
-    strip.setPixelColor(i, rgb_colors[0], rgb_colors[1], rgb_colors[2]);
+void setControlMode(int button) {
+  if (buttonPressed(button)) {
+    control_mode++;
+    if (control_mode > 3) control_mode = 0;
+    if (control_mode == 1) {
+      saturation = 255;
+      brightness = 128;
+    };
   }
-  strip.show();
-
-  delay(20); // delay to slow down fading
 }
 
 int getAnalogInput(int inputPin) {
