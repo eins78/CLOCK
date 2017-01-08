@@ -1,7 +1,20 @@
 # neopixel 7-segment clock
 
 building a digital clock from scratch
-using 30 neopixels (4*7 segments + 2 dots)
+using 30 neopixels (4 × 7 segments + 2 dots)
+
+# thanks
+
+-  ["DSEG" font](http://www.keshikan.net/fonts-e.html)
+(licensed under [SIL OPEN FONT LICENSE Version 1.1](http://scripts.sil.org/OFL), [source](https://github.com/keshikan/DSEG))
+
+- [Arduino](https://www.arduino.cc)
+
+- [Adafruit NeoPixel Library](https://github.com/adafruit/Adafruit_NeoPixel)
+
+- [Arduino Time Library by Michael Margolis](https://www.pjrc.com/teensy/td_libs_Time.html)
+
+- [vemeT5ak](https://github.com/vemeT5ak) for [code inspiration](https://github.com/vemeT5ak/7-segment-neopixel-clock)
 
 # sync from OpenWRT router
 
@@ -25,7 +38,7 @@ should output
 [341699.646933] usb 2-1: FTDI USB Serial Device converter now attached to ttyUSB0
 ```
 
-## sync from router
+## sync daemons for openWRT
 
 prepare:
 
