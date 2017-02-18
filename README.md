@@ -14,6 +14,8 @@ using 30 neopixels (4 × 7 segments + 2 dots)
 
 - [Arduino Time Library by Michael Margolis](https://www.pjrc.com/teensy/td_libs_Time.html)
 
+- [Arduino HSB to RGB](http://www.kasperkamperman.com/blog/arduino/arduino-programming-hsb-to-rgb/)
+
 - [vemeT5ak](https://github.com/vemeT5ak) for [code inspiration](https://github.com/vemeT5ak/7-segment-neopixel-clock)
 
 # sync from OpenWRT router
